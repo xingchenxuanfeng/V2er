@@ -26,7 +26,7 @@ public class TopicContentItemDelegate extends ItemViewDelegate<TopicInfo.Item> {
 
     public TopicContentItemDelegate(Context context) {
         super(context);
-        L.e("TopicContentItemDelegate init------");
+        L.d("TopicContentItemDelegate init------");
     }
 
     @Override
@@ -42,7 +42,7 @@ public class TopicContentItemDelegate extends ItemViewDelegate<TopicInfo.Item> {
 
     @Override
     public void convert(ViewHolder holder, TopicInfo.Item item, int position) {
-        L.e("------------convert------");
+        L.d("------------convert------");
         HtmlView.OnHtmlRenderListener renderListener = (HtmlView.OnHtmlRenderListener) mContext;
         TopicInfo.ContentInfo contentInfo = (TopicInfo.ContentInfo) item;
         if (mWebviewContainer == null) {
@@ -56,9 +56,9 @@ public class TopicContentItemDelegate extends ItemViewDelegate<TopicInfo.Item> {
         if (Check.notEmpty(content)) {
             mWebviewContainer.setVisibility(View.VISIBLE);
             boolean isContentChanged = !content.equals(mLastContent);
-            L.e("----load content----");
+            L.d("----load content----");
             if (isContentChanged) {
-                L.e("----content changed----");
+                L.d("----content changed----");
                 mHtmlView.loadContentView(content);
                 mLastContent = content;
             } else {

@@ -7,6 +7,9 @@ import androidx.annotation.Nullable;
 
 import com.google.android.material.textfield.TextInputLayout;
 
+import android.os.Handler;
+import android.os.Looper;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -19,8 +22,11 @@ import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 
+import java.io.IOException;
+
 import butterknife.BindView;
 import butterknife.OnClick;
+import me.ghui.v2er.network.APIService;
 import me.ghui.v2er.util.Check;
 import me.ghui.v2er.util.Theme;
 import me.ghui.v2er.R;
@@ -33,7 +39,6 @@ import me.ghui.v2er.injector.module.LoginModule;
 import me.ghui.v2er.module.base.BaseActivity;
 import me.ghui.v2er.module.home.MainActivity;
 import me.ghui.v2er.module.settings.UserManualActivity;
-import me.ghui.v2er.network.Constants;
 import me.ghui.v2er.network.bean.LoginParam;
 import me.ghui.v2er.util.L;
 import me.ghui.v2er.util.Utils;
@@ -60,6 +65,8 @@ public class LoginActivity extends BaseActivity<LoginContract.IPresenter> implem
     ViewGroup mCaptchaWrapper;
     @BindView(R.id.img_loading_view)
     ProgressBar mImgLoadingView;
+    @BindView(R.id.login_by_google_btn)
+    Button mGoogleLoginBtn;
 
     //登录参数加载成功标识
     private boolean mHasLoaded;
@@ -78,6 +85,39 @@ public class LoginActivity extends BaseActivity<LoginContract.IPresenter> implem
     protected void init() {
         super.init();
         Utils.setPaddingForNavbar(mRootView);
+
+        mGoogleLoginBtn.setVisibility(View.GONE);
+        checkGoogleAccess(new Runnable() {
+            @Override
+            public void run() {
+                mGoogleLoginBtn.setVisibility(View.VISIBLE);
+            }
+        });
+    }
+
+    public static void checkGoogleAccess(Runnable runnable) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                boolean result = canAccessGoogle();
+                Log.d("LoginActivity", "checkGoogleAccess,result:" + result);
+                if (result) {
+                    new Handler(Looper.getMainLooper()).post(runnable);
+                }
+            }
+        }).start();
+    }
+
+    public static boolean canAccessGoogle() {
+        Runtime runtime = Runtime.getRuntime();
+        try {
+            Process ipProcess = runtime.exec("/system/bin/ping -c 1 www.google.com");
+            int exitValue = ipProcess.waitFor();
+            return (exitValue == 0);
+        } catch (IOException | InterruptedException e) {
+            Log.e("LoginActivity", "canAccessGoogle", e);
+        }
+        return false;
     }
 
     @Override
@@ -93,13 +133,13 @@ public class LoginActivity extends BaseActivity<LoginContract.IPresenter> implem
         toolBar.inflateMenu(R.menu.login_toolbar_menu);
         toolBar.setOnMenuItemClickListener(item -> {
             if (item.getItemId() == R.id.action_register) {
-                Utils.openInBrowser(Constants.BASE_URL + "/signup?r=ghui", this);
+                Utils.openInBrowser(APIService.getImprBaseUrl() + "/signup?r=ghui", this);
             } else if (item.getItemId() == R.id.action_forgot_psw) {
-                Utils.openInBrowser(Constants.BASE_URL + "/forgot", this);
+                Utils.openInBrowser(APIService.getImprBaseUrl() + "/forgot", this);
             } else if (item.getItemId() == R.id.action_faq) {
                 Navigator.from(this).to(UserManualActivity.class).start();
             } else if (item.getItemId() == R.id.action_about) {
-                Utils.openInBrowser(Constants.BASE_URL + "/about", this);
+                Utils.openInBrowser(APIService.getImprBaseUrl() + "/about", this);
             }
             return true;
         });
@@ -180,7 +220,7 @@ public class LoginActivity extends BaseActivity<LoginContract.IPresenter> implem
         L.d("加载登录参数成功");
         mLoginParam = loginParam;
         if (mLoginParam.needCaptcha()) {
-            String capchaUrl = Constants.BASE_URL + "/_captcha?once=" + loginParam.getOnce();
+            String capchaUrl = APIService.getImprBaseUrl() + "/_captcha?once=" + loginParam.getOnce();
             GlideApp.with(this).
                     load(capchaUrl)
                     .diskCacheStrategy(DiskCacheStrategy.NONE)

@@ -1,6 +1,7 @@
 package me.ghui.v2er.network.bean;
 
 import android.text.TextUtils;
+import android.util.Log;
 
 import java.io.Serializable;
 import java.util.List;
@@ -21,7 +22,7 @@ import me.ghui.v2er.util.Utils;
 public class NodeTopicInfo extends BaseInfo {
 
     @Pick("span.topic-count strong")
-    private int total;
+    private String total;
     @Pick(value = "a[href*=favorite/] ", attr = Attrs.HREF)
     private String favoriteLink;
     @Pick("div.box div.cell:has(table)")
@@ -32,7 +33,12 @@ public class NodeTopicInfo extends BaseInfo {
     }
 
     public int getTotal() {
-        return total;
+        try {
+            return Integer.parseInt(this.total.replace(",", ""));
+        } catch (Exception e) {
+            Log.e("NodeTopicInfo", "getTotal", e);
+        }
+        return 999999;
     }
 
     public List<Item> getItems() {

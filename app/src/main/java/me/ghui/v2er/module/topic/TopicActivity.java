@@ -350,7 +350,7 @@ public class TopicActivity extends BaseActivity<TopicContract.IPresenter> implem
 
             @Override
             public void onTransitionEnd(Transition transition) {
-                L.e("onTransitionEnd");
+                L.d("onTransitionEnd");
                 mNeedWaitForTransitionEnd = false;
                 if (mTopicInfo != null) {
                     delay(30, () -> fillView(mTopicInfo, mIsScanInOrder ? 1 : mTopicInfo.getTotalPage()));

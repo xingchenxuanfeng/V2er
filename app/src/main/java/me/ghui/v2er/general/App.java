@@ -26,6 +26,7 @@ import me.ghui.v2er.util.UserUtils;
 public class App extends Application {
     private static App sInstance;
     private AppComponent mAppComponent;
+    private long appStartTime;
 
     public static App get() {
         return sInstance;
@@ -38,6 +39,7 @@ public class App extends Application {
     }
 
     private void init() {
+        appStartTime = System.currentTimeMillis();
         sInstance = this;
         mAppComponent = DaggerAppComponent.builder().appModule(new AppModule(sInstance))
                 .build();
@@ -72,4 +74,7 @@ public class App extends Application {
         return mAppComponent;
     }
 
+    public long getAppStartTime() {
+        return appStartTime;
+    }
 }

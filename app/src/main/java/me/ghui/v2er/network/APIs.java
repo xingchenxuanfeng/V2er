@@ -82,7 +82,7 @@ public interface APIs {
     @Html
     @FormUrlEncoded
     @Headers("Referer: " + Constants.BASE_URL + "/signin")
-    @POST("/signin")
+    @POST("/signin?next=/t")
     Observable<Response<ResponseBody>> login(@FieldMap Map<String, String> loginParams);
 
     @Html

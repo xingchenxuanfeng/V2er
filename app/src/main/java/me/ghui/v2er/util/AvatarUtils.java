@@ -1,6 +1,5 @@
 package me.ghui.v2er.util;
 
-import me.ghui.v2er.util.Check;
 import me.ghui.v2er.network.Constants;
 
 /**

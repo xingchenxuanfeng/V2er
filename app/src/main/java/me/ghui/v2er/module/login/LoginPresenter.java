@@ -1,7 +1,10 @@
 package me.ghui.v2er.module.login;
 
 
+import android.util.Log;
 
+import me.ghui.v2er.BuildConfig;
+import me.ghui.v2er.network.bean.ErrorRequestInfo;
 import me.ghui.v2er.util.Check;
 import me.ghui.v2er.R;
 import me.ghui.v2er.general.App;
@@ -22,6 +25,7 @@ public class LoginPresenter implements LoginContract.IPresenter {
 
     private LoginContract.IView mView;
     private LoginParam mLoginParam;
+    private LoginParam mFailCacheLoginParam;
 
     public LoginPresenter(LoginContract.IView mView) {
         this.mView = mView;
@@ -29,6 +33,12 @@ public class LoginPresenter implements LoginContract.IPresenter {
 
     @Override
     public void start() {
+        if (mFailCacheLoginParam != null && mFailCacheLoginParam.isValid()) {
+            mView.onFetchLoginParamSuccess(mFailCacheLoginParam);
+            mLoginParam = mFailCacheLoginParam;
+            mFailCacheLoginParam = null;
+            return;
+        }
         APIService.get().loginParam()
                 .compose(mView.rx(null))
                 .subscribe(new GeneralConsumer<LoginParam>(mView) {
@@ -51,19 +61,30 @@ public class LoginPresenter implements LoginContract.IPresenter {
                 .compose(mView.rx())
                 .map(response -> response.body().string())
                 .map(s -> {
+                    Log.e("testtest", s);
                     DailyInfo resultInfo = APIService.fruit().fromHtml(s, DailyInfo.class);
                     if (!resultInfo.isValid()) {//check whether is login success
                         LoginParam loginParam = APIService.fruit().fromHtml(s, LoginParam.class);
                         if (!loginParam.isValid()) {//check whether is psw incorrect
                             //you may enabled two step login
                             TwoStepLoginInfo twoStepLoginInfo = APIService.fruit().fromHtml(s, TwoStepLoginInfo.class);
-                            return twoStepLoginInfo;
+                            if (twoStepLoginInfo != null) {
+                                return twoStepLoginInfo;
+                            } else {
+                                return new ErrorRequestInfo(s);
+                            }
                         }
                         return loginParam;
                     }
                     return resultInfo;
                 })
                 .subscribe(new GeneralConsumer<BaseInfo>(mView) {
+                    @Override
+                    public void onError(Throwable e) {
+//                        super.onError(e);
+                        Log.e("LoginPresenter", "onError", e);
+                    }
+
                     @Override
                     public void onConsume(BaseInfo info) {
                         if (info instanceof DailyInfo) {
@@ -84,11 +105,18 @@ public class LoginPresenter implements LoginContract.IPresenter {
                             } else {
                                 mView.onLoginFailure(App.get().getString(R.string.login_occur_unknown_error), false);
                             }
+                            mFailCacheLoginParam = loginParam;
                         } else if (info instanceof TwoStepLoginInfo) {
                             //you may enabled two step login
                             TwoStepLoginInfo twoStepLoginInfo = (TwoStepLoginInfo) info;
                             TwoStepLoginActivity.open(twoStepLoginInfo.getOnce(), mView.getContext());
                             mView.onOccuredTwoStep();
+                        } else if (info instanceof ErrorRequestInfo) {
+                            if (BuildConfig.DEBUG) {
+                                mView.onLoginFailure(((ErrorRequestInfo) info).getMsg(), true);
+                            } else {
+                                mView.onLoginFailure(App.get().getString(R.string.login_occur_unknown_error), false);
+                            }
                         }
                     }
                 });

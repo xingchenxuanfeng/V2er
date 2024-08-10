@@ -1,9 +1,11 @@
 apply plugin: 'com.android.application'
+def localProperties = new Properties()
+localProperties.load(new FileInputStream(rootProject.file("local.properties")))
 
 android {
     compileSdk 33
     defaultConfig {
-        applicationId "me.ghui.v2er"
+        applicationId "xc.v2er.impr"
         minSdkVersion 27
         targetSdkVersion 33
         versionCode rootProject.ext.app.versionCode
@@ -11,6 +13,11 @@ android {
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
         multiDexEnabled true
         vectorDrawables.useSupportLibrary = true
+
+        buildConfigField "String", "getImprBaseUrlListFromServerApi", "\"${localProperties['getImprBaseUrlListFromServerApi']}\""
+        buildConfigField "String", "imprBaseUrlConfig1", "\"${localProperties['imprBaseUrlConfig1']}\""
+        buildConfigField "String", "imprBaseUrlConfig2", "\"${localProperties['imprBaseUrlConfig2']}\""
+
     }
     signingConfigs {
         github {
@@ -27,9 +34,9 @@ android {
         release {
             try {
                 storeFile file("../ghui.jks")
-                storePassword GHUI_KEYSTORE_PASSWORD
+                storePassword "test"
                 keyAlias "ghui"
-                keyPassword GHUI_KEY_PASSWORD
+                keyPassword "test"
             } catch (ex) {
                 throw ex.printStackTrace()
             }
@@ -120,4 +127,6 @@ dependencies {
     implementation 'com.oasisfeng.condom:library:2.2.0'
     implementation 'org.slf4j:slf4j-nop:1.7.25'
     implementation 'androidx.core:core-splashscreen:1.0.1'
+
+    implementation 'com.aliyun.ams:alicloud-android-httpdns:2.3.2'
 }

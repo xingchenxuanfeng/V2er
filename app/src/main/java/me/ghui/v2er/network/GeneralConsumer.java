@@ -1,5 +1,7 @@
 package me.ghui.v2er.network;
 
+import android.util.Log;
+
 import io.reactivex.Observable;
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
@@ -24,6 +26,8 @@ public abstract class GeneralConsumer<T extends IBase> implements Observer<T> {
 
     private IGeneralErrorHandler mGeneralErrorHandler;
 
+    private RuntimeException preExceptionOnSubscribe;
+
     public GeneralConsumer(IGeneralErrorHandler generalErrorHandler) {
         mGeneralErrorHandler = generalErrorHandler;
     }
@@ -33,6 +37,9 @@ public abstract class GeneralConsumer<T extends IBase> implements Observer<T> {
 
     @Override
     public void onSubscribe(Disposable d) {
+        if (BuildConfig.DEBUG) {
+            preExceptionOnSubscribe = new RuntimeException();
+        }
     }
 
     @Override
@@ -111,6 +118,11 @@ public abstract class GeneralConsumer<T extends IBase> implements Observer<T> {
 
     @Override
     public void onError(Throwable e) {
+        if (BuildConfig.DEBUG && preExceptionOnSubscribe != null) {
+            preExceptionOnSubscribe.addSuppressed(e);
+            Log.e("GeneralConsumer", "onError", preExceptionOnSubscribe);
+            throw preExceptionOnSubscribe;
+        }
         GeneralError generalError;
         if (e instanceof GeneralError) {
             generalError = (GeneralError) e;

@@ -120,6 +120,20 @@ public class WebkitCookieManagerProxy extends CookieManager implements CookieJar
                     }
                 }
             }
+
+            if (url.toString().contains(APIService.getImprBaseUrl())) {
+                Map<String, List<String>> originCookieList = get(HttpUrl.parse(Constants.BASE_URL).uri(), new HashMap<String, List<String>>());
+                // Format here looks like: "Cookie":["cookie1=val1;cookie2=val2;"]
+                for (List<String> ls : originCookieList.values()) {
+                    for (String s : ls) {
+                        String[] cookies = s.split(";");
+                        for (String cookie : cookies) {
+                            Cookie c = Cookie.parse(url, cookie);
+                            cookieArrayList.add(c);
+                        }
+                    }
+                }
+            }
         } catch (IOException e) {
             L.e(e.toString());
         }
