@@ -51,6 +51,7 @@ public class ModifyUrlInterceptor implements Interceptor {
     }
 
     private static @Nullable Response netImprCall(Chain chain, HttpUrl url, String originUrl, Request request) throws IOException {
+
         if (!APIService.getImprBaseUrl().equals(Constants.BASE_URL)) {
             if (url.host().equals("www.v2ex.com")) {
                 Log.d("ModifyUrlInterceptor", "change host to:" + APIService.getImprBaseUrl() + " ,originUrl: " + originUrl);
@@ -68,6 +69,7 @@ public class ModifyUrlInterceptor implements Interceptor {
                 return chain.proceed(request);
             }
         }
+
         return null;
     }
 }

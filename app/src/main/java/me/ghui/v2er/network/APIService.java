@@ -265,7 +265,7 @@ public class APIService {
                     .dns(HttpDNS.instance)
                     .retryOnConnectionFailure(true)
                     .addInterceptor(new ConfigInterceptor())
-                    .addNetworkInterceptor(new AcceptOriginCookieInterceptor())
+                    .addNetworkInterceptor(new AcceptOriginCookieAndModifyLocationInterceptor())
                     .addInterceptor(new ModifyUrlInterceptor());
             if (BuildConfig.DEBUG) {
                 builder.addInterceptor(new HttpLoggingInterceptor(L::v)
