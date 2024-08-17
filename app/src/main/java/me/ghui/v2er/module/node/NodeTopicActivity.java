@@ -391,6 +391,7 @@ public class NodeTopicActivity extends BaseActivity<NodeTopicContract.IPresenter
                     .negativeText(R.string.cancel)
                     .build().show();
         } else {
+            mStarBtn.startUpdate();
             mPresenter.starNode(mNodeTopicInfo.getFavoriteLink());
         }
     }
