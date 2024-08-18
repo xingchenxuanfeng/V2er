@@ -3,11 +3,11 @@ def localProperties = new Properties()
 localProperties.load(new FileInputStream(rootProject.file("local.properties")))
 
 android {
-    compileSdk 33
+    compileSdk 34
     defaultConfig {
         applicationId "xc.v2er.impr"
         minSdkVersion 27
-        targetSdkVersion 33
+        targetSdkVersion 34
         versionCode rootProject.ext.app.versionCode
         versionName rootProject.ext.app.versionName
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'

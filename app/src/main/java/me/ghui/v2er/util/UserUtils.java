@@ -4,7 +4,10 @@ import android.app.Activity;
 import android.content.Context;
 import android.text.TextUtils;
 
+import java.util.UUID;
+
 import es.dmoral.prefs.Prefs;
+import me.ghui.v2er.general.Pref;
 import me.ghui.v2er.network.GeneralConsumer;
 import me.ghui.v2er.general.App;
 import me.ghui.v2er.general.Navigator;
@@ -20,6 +23,7 @@ import me.ghui.v2er.network.bean.UserInfo;
 public class UserUtils {
 
     private static final String USER_INFO_KEY = Constants.PACKAGE_NAME + "user_info_key";
+    private static String sDeviceId;
 
     public static UserInfo getUserInfo() {
         String json = Prefs.with(App.get()).read(USER_INFO_KEY);
@@ -106,4 +110,16 @@ public class UserUtils {
                 || "ghuiii".contentEquals(currentUser);
     }
 
+    public static String getDeviceId() {
+        if (!TextUtils.isEmpty(sDeviceId)) {
+            return sDeviceId;
+        }
+        sDeviceId = Pref.read("DEVICE_ID");
+
+        if (TextUtils.isEmpty(sDeviceId)) {
+            sDeviceId = UUID.randomUUID().toString();
+            Pref.save("DEVICE_ID", sDeviceId);
+        }
+        return sDeviceId;
+    }
 }

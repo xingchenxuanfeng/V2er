@@ -30,6 +30,7 @@ import me.ghui.v2er.BuildConfig;
 import me.ghui.v2er.general.App;
 import me.ghui.v2er.util.Check;
 import me.ghui.v2er.util.L;
+import me.ghui.v2er.util.UserUtils;
 import okhttp3.CacheControl;
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -289,11 +290,17 @@ public class APIService {
         public Response intercept(Chain chain) throws IOException {
             Request request = chain.request();
             String ua = request.header(UA_KEY);
+            Request.Builder builder = request.newBuilder();
             if (Check.isEmpty(ua)) {
-                request = request.newBuilder()
-                        .addHeader("user-agent", WAP_USER_AGENT)
-                        .build();
+                builder.addHeader("user-agent", WAP_USER_AGENT);
             }
+            String secUserAgent = request.header("v-sec-device-id");
+            if (Check.isEmpty(secUserAgent)) {
+
+                String deviceId = UserUtils.getDeviceId();
+                builder.addHeader("v-sec-device-id", deviceId);
+            }
+            request = builder.build();
             return chain.proceed(request);
 
 //            try {
