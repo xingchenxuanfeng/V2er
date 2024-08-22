@@ -1,5 +1,6 @@
 package me.ghui.v2er.network;
 
+import android.text.TextUtils;
 import android.util.Log;
 
 import java.io.IOException;
@@ -25,6 +26,9 @@ public class AcceptOriginCookieAndModifyLocationInterceptor implements Intercept
         try {
 //        Location	https://www.v2ex.com/mission/daily
             String locationUrl = response.header("Location");
+            if (TextUtils.isEmpty(locationUrl)) {
+                return response;
+            }
             HttpUrl httpUrl = HttpUrl.parse(locationUrl);
             String host = httpUrl.host();
             if ("www.v2ex.com".equals(host)) {
