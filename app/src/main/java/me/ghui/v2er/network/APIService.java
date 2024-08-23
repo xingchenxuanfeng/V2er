@@ -10,6 +10,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -31,6 +32,7 @@ import me.ghui.v2er.general.App;
 import me.ghui.v2er.util.Check;
 import me.ghui.v2er.util.L;
 import me.ghui.v2er.util.UserUtils;
+import okhttp3.Cache;
 import okhttp3.CacheControl;
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -127,31 +129,51 @@ public class APIService {
                 if (!appOnForeground()) {
                     return;
                 }
-                checkImprBaseUrlFinish = false;
-                for (String url : imprBaseUrlList) {
-                    new Thread(() -> {
-                        boolean result = canAccessNet(url);
-                        Log.d("APIService", "canAccessNet url:" + url + " result:" + result);
-                        if (result) {
-                            if (!checkImprBaseUrlFinish || url.equals(Constants.BASE_URL)) {
-                                lock.lock();
-                                try {
-                                    curImprBaseUrl = url;
-                                    sharePreferences.edit().putString(CUR_IMPR_BASEURL_KEY, url).apply();
-                                    Log.d("APIService", "success set curImprBaseUrl:" + url);
-                                    valueSet.signalAll(); // 通知等待的线程（主线程）
-                                } finally {
-                                    lock.unlock();
-                                }
-                                checkImprBaseUrlFinish = true;
-                            } else {
-                                Log.d("APIService", "too late,but access:" + url);
-                            }
-                        }
-                    }).start();
-                }
+                updateCurImprBaseUrlAsync();
             }
         }, 0, 5 * 60 * 1000);
+    }
+
+    public static void updateCurImprBaseUrlAsync() {
+        checkImprBaseUrlFinish = false;
+        for (String url : imprBaseUrlList) {
+            new Thread(() -> {
+                boolean result = canAccessNet(url);
+                Log.d("APIService", "canAccessNet url:" + url + " result:" + result);
+                if (result) {
+                    if (!checkImprBaseUrlFinish || url.equals(Constants.BASE_URL)) {
+                        lock.lock();
+                        try {
+                            curImprBaseUrl = url;
+                            sharePreferences.edit().putString(CUR_IMPR_BASEURL_KEY, url).apply();
+                            Log.d("APIService", "success set curImprBaseUrl:" + url);
+                            valueSet.signalAll(); // 通知等待的线程（主线程）
+                        } finally {
+                            lock.unlock();
+                        }
+                        checkImprBaseUrlFinish = true;
+                    } else {
+                        Log.d("APIService", "too late,but access:" + url);
+                    }
+                }
+            }).start();
+        }
+    }
+
+    public static void updateCurImprBaseUrlSync() {
+        Log.d("APIService", "updateCurImprBaseUrlSync imprBaseUrlList:" + imprBaseUrlList);
+
+        for (String url : imprBaseUrlList) {
+            boolean result = canAccessNet(url);
+            Log.d("APIService", "canAccessNet url:" + url + " result:" + result);
+            if (result) {
+                curImprBaseUrl = url;
+                sharePreferences.edit().putString(CUR_IMPR_BASEURL_KEY, url).apply();
+                Log.d("APIService", "success set curImprBaseUrl:" + url);
+                return;
+            }
+        }
+        Log.e("APIService", "updateCurImprBaseUrlSync all canAccessNet fail!!!, imprBaseUrlList:" + imprBaseUrlList);
     }
 
     private static boolean appOnForeground() {
@@ -191,6 +213,7 @@ public class APIService {
             Request request = new Request.Builder()
                     .url(url)
                     .tag(ModifyUrlInterceptor.NO_MODIFY_URL_TAG)
+                    .cacheControl(CacheControl.FORCE_NETWORK)
                     .build();
 
             Response response = httpClient().newCall(request).execute();
@@ -211,17 +234,19 @@ public class APIService {
             Request request = new Request.Builder()
                     .url(BuildConfig.getImprBaseUrlListFromServerApi)
                     .tag(ModifyUrlInterceptor.NO_MODIFY_URL_TAG)
-                    .cacheControl(new CacheControl.Builder().build())
                     .build();
+            Log.d("APIService", "getImprBaseUrlListFromServer start");
 
             httpClient().newCall(request).enqueue(new Callback() {
                 @Override
                 public void onFailure(Call call, IOException e) {
                     Log.e("APIService", "getImprBaseUrlListFromServer onFailure", e);
+                    callBack.onResult(new ArrayList<>());
                 }
 
                 @Override
                 public void onResponse(Call call, Response response) throws IOException {
+                    Log.d("APIService", "getImprBaseUrlListFromServer onResponse cost:" + (System.currentTimeMillis() - start));
                     if (response.isSuccessful()) {
                         String json = response.body().string();
                         Type type = new TypeToken<List<String>>() {
@@ -261,6 +286,7 @@ public class APIService {
     public static OkHttpClient httpClient() {
         if (sHttpClient == null) {
             OkHttpClient.Builder builder = new OkHttpClient.Builder()
+                    .cache(new Cache(new File(App.get().getCacheDir(), "okhttp"), 10 * 1024 * 1024))
                     .connectTimeout(TIMEOUT_LENGTH, TimeUnit.SECONDS)
                     .cookieJar(cookieJar())
                     .dns(HttpDNS.instance)
@@ -288,6 +314,7 @@ public class APIService {
     private static class ConfigInterceptor implements Interceptor {
         @Override
         public Response intercept(Chain chain) throws IOException {
+            long startTime = System.currentTimeMillis();
             Request request = chain.request();
             String ua = request.header(UA_KEY);
             Request.Builder builder = request.newBuilder();
@@ -301,7 +328,18 @@ public class APIService {
                 builder.addHeader("v-sec-device-id", deviceId);
             }
             request = builder.build();
-            return chain.proceed(request);
+            Response response = chain.proceed(request);
+
+            long endTime = System.currentTimeMillis();
+
+            Log.d("APIService", "ConfigInterceptor, url:" + request.url() +
+                    ", networkResponse:" + (response.networkResponse() != null) +
+                    ", cacheResponse:" + (response.cacheResponse() != null) +
+                    ", code:" + (response.networkResponse() != null ? response.networkResponse().code() : -1) +
+                    ", duration:" + (endTime - startTime)
+            );
+
+            return response;
 
 //            try {
 //                return chain.proceed(request);
