@@ -219,7 +219,7 @@ public class APIService {
             Response response = httpClient().newCall(request).execute();
             return response.isSuccessful();
         } catch (Exception e) {
-            Log.e("APIService", "canAccessNet url:" + url, e);
+            Log.e("APIService", "canAccessNet url:" + url + "\n" + e.getMessage());
             return false;
         }
     }

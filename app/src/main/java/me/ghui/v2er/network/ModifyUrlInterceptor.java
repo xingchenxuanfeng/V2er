@@ -38,7 +38,17 @@ public class ModifyUrlInterceptor implements Interceptor {
             return chain.proceed(request);
         }
 
-        Response response = netImprCall(chain, url, originUrl, request);
+        Response response = null;
+        try {
+            response = netImprCall(chain, url, originUrl, request, false);
+        } catch (Exception e) {
+            Log.e("ModifyUrlInterceptor", "netImprCall error", e);
+            if (e instanceof UnknownHostException) {
+                Log.e("ModifyUrlInterceptor", "netImprCall UnknownHostException, retry");
+                APIService.updateCurImprBaseUrlSync();
+                response = netImprCall(chain, url, originUrl, request, false);
+            }
+        }
         if (response != null) {
             return response;
         }
@@ -58,7 +68,7 @@ public class ModifyUrlInterceptor implements Interceptor {
                     APIService.updateCurImprBaseUrlAsync();
                 }
                 Log.e("ModifyUrlInterceptor", "error and retry", e);
-                Response failRetryResponse = netImprCall(chain, url, originUrl, request);
+                Response failRetryResponse = netImprCall(chain, url, originUrl, request, true);
                 if (failRetryResponse != null) {
                     return failRetryResponse;
                 }
@@ -67,22 +77,8 @@ public class ModifyUrlInterceptor implements Interceptor {
         return chain.proceed(request);
     }
 
-    private static @Nullable Response netImprCall(Chain chain, HttpUrl url, String originUrl, Request request) throws IOException {
+    private static @Nullable Response netImprCall(Chain chain, HttpUrl url, String originUrl, Request request, boolean fallBack) throws IOException {
 
-        try {
-            return netImprCallInternal(chain, url, originUrl, request);
-        } catch (Exception e) {
-            Log.e("ModifyUrlInterceptor", "netImprCall error", e);
-            if (e instanceof UnknownHostException) {
-                Log.e("ModifyUrlInterceptor", "netImprCall UnknownHostException, retry");
-                APIService.updateCurImprBaseUrlSync();
-                return netImprCallInternal(chain, url, originUrl, request);
-            }
-        }
-        return null;
-    }
-
-    private static @Nullable Response netImprCallInternal(Chain chain, HttpUrl url, String originUrl, Request request) throws IOException {
         String imprBaseUrl = APIService.getImprBaseUrl();
         Log.d("ModifyUrlInterceptor", "netImprCall,imprBaseUrl:" + imprBaseUrl + " ,originUrl: " + originUrl);
 
@@ -102,7 +98,7 @@ public class ModifyUrlInterceptor implements Interceptor {
                         .build();
                 return chain.proceed(request);
             }
-            if (url.host().contains("imgur.com")) {
+            if (url.host().contains("imgur.com") || fallBack) {
                 Log.d("ModifyUrlInterceptor", "change to corsproxy, originUrl: " + originUrl);
                 request = request.newBuilder()
                         .url(imprBaseUrl + "/corsproxy/?apiurl=" + URLEncoder.encode(originUrl))
