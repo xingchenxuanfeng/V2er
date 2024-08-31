@@ -245,6 +245,10 @@ public class TopicInfo extends BaseInfo {
             Document parentNode = Jsoup.parse(html);
             parentNode.getElementsByClass("header").remove();
             parentNode.getElementsByClass("inner").remove();
+
+            parentNode.select("script[src*=pagead2.googlesyndication.com]").remove();
+            parentNode.getElementsByClass("adsbygoogle").remove();
+
             if ("".equals(parentNode.text())
                     && parentNode.getElementsByClass("embedded_video_wrapper") == null) {
                 formatedHtml = null;
