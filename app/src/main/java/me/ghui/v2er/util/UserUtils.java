@@ -1,5 +1,7 @@
 package me.ghui.v2er.util;
 
+import static me.ghui.v2er.module.home.CheckInPresenter.CHECK_IN_EXPIRED;
+
 import android.app.Activity;
 import android.content.Context;
 import android.text.TextUtils;
@@ -85,6 +87,9 @@ public class UserUtils {
         APIService.cookieJar().clearCookie();
         //2. crear userInfo
         Prefs.with(App.get()).remove(USER_INFO_KEY);
+
+        Pref.save(CHECK_IN_EXPIRED, 0L);
+
     }
 
     public static boolean notLoginAndProcessToLogin(boolean finishCurrentPage, Context context) {

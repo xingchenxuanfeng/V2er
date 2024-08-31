@@ -1,5 +1,7 @@
 package me.ghui.v2er.module.login;
 
+import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
+
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 
@@ -26,6 +28,7 @@ import java.io.IOException;
 
 import butterknife.BindView;
 import butterknife.OnClick;
+import me.ghui.v2er.general.App;
 import me.ghui.v2er.network.APIService;
 import me.ghui.v2er.util.Check;
 import me.ghui.v2er.util.Theme;
@@ -71,6 +74,26 @@ public class LoginActivity extends BaseActivity<LoginContract.IPresenter> implem
     //登录参数加载成功标识
     private boolean mHasLoaded;
     private LoginParam mLoginParam;
+
+    public static boolean sIsLoginActivityResume = false;
+
+    public static void goLogin() {
+        if (!sIsLoginActivityResume) {
+            Navigator.from(App.get()).to(LoginActivity.class).addFlag(FLAG_ACTIVITY_NEW_TASK).start();
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        sIsLoginActivityResume = true;
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        sIsLoginActivityResume = false;
+    }
 
     @Override
     protected void startInject() {

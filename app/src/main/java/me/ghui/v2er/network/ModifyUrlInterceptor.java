@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.net.UnknownHostException;
+import java.util.concurrent.TimeUnit;
 
 import me.ghui.v2er.general.App;
 import okhttp3.HttpUrl;
@@ -46,7 +47,7 @@ public class ModifyUrlInterceptor implements Interceptor {
             if (e instanceof UnknownHostException) {
                 Log.e("ModifyUrlInterceptor", "netImprCall UnknownHostException, retry");
                 APIService.updateCurImprBaseUrlSync();
-                response = netImprCall(chain, url, originUrl, request, false);
+                response = netImprCall(chain, url, originUrl, request, true);
             }
         }
         if (response != null) {
@@ -55,7 +56,9 @@ public class ModifyUrlInterceptor implements Interceptor {
 
         try {
             Log.d("ModifyUrlInterceptor", "direct call originUrl: " + originUrl);
-            return chain.proceed(request);
+            return chain
+                    .withConnectTimeout(3, TimeUnit.SECONDS)
+                    .proceed(request);
         } catch (Exception e) {
             if ("Canceled".equals(e.getMessage())) {
                 //ignore
@@ -89,20 +92,19 @@ public class ModifyUrlInterceptor implements Interceptor {
                 request = request.newBuilder()
                         .url(url.newBuilder().host(replaceHost).build())
                         .build();
+                if (!fallBack) {
+                    chain = chain.withConnectTimeout(3, TimeUnit.SECONDS);
+                }
                 return chain.proceed(request);
             }
-            if (url.host().contains("v2ex.com")) {
+            if (url.host().contains("v2ex.com") || url.host().contains("imgur.com") || fallBack) {
                 Log.d("ModifyUrlInterceptor", "change to corsproxy, originUrl: " + originUrl);
                 request = request.newBuilder()
                         .url(imprBaseUrl + "/corsproxy/?apiurl=" + URLEncoder.encode(originUrl))
                         .build();
-                return chain.proceed(request);
-            }
-            if (url.host().contains("imgur.com") || fallBack) {
-                Log.d("ModifyUrlInterceptor", "change to corsproxy, originUrl: " + originUrl);
-                request = request.newBuilder()
-                        .url(imprBaseUrl + "/corsproxy/?apiurl=" + URLEncoder.encode(originUrl))
-                        .build();
+                if (!fallBack) {
+                    chain = chain.withConnectTimeout(3, TimeUnit.SECONDS);
+                }
                 return chain.proceed(request);
             }
         }

@@ -13,6 +13,8 @@ import com.google.gson.reflect.TypeToken;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -209,6 +211,10 @@ public class APIService {
     }
 
     public static boolean canAccessNet(String url) {
+//        if (url.equals(Constants.BASE_URL)) {
+//            return false;
+//        }
+
         try {
             Request request = new Request.Builder()
                     .url(url)
@@ -290,8 +296,10 @@ public class APIService {
                     .connectTimeout(TIMEOUT_LENGTH, TimeUnit.SECONDS)
                     .cookieJar(cookieJar())
                     .dns(HttpDNS.instance)
+//                    .proxy(new Proxy(Proxy.Type.HTTP, new InetSocketAddress("10.84.191.215", 8888)))
                     .retryOnConnectionFailure(true)
                     .addInterceptor(new ConfigInterceptor())
+                    .addInterceptor(new LoginInterceptor())
                     .addNetworkInterceptor(new AcceptOriginCookieAndModifyLocationInterceptor())
                     .addInterceptor(new ModifyUrlInterceptor());
             if (BuildConfig.DEBUG) {
@@ -309,68 +317,6 @@ public class APIService {
             sCookieJar = new WebkitCookieManagerProxy();
         }
         return sCookieJar;
-    }
-
-    private static class ConfigInterceptor implements Interceptor {
-        @Override
-        public Response intercept(Chain chain) throws IOException {
-            long startTime = System.currentTimeMillis();
-            Request request = chain.request();
-            String ua = request.header(UA_KEY);
-            Request.Builder builder = request.newBuilder();
-            if (Check.isEmpty(ua)) {
-                builder.addHeader("user-agent", WAP_USER_AGENT);
-            }
-            String secUserAgent = request.header("v-sec-device-id");
-            if (Check.isEmpty(secUserAgent)) {
-
-                String deviceId = UserUtils.getDeviceId();
-                builder.addHeader("v-sec-device-id", deviceId);
-            }
-            request = builder.build();
-            Response response = chain.proceed(request);
-
-            long endTime = System.currentTimeMillis();
-
-            Log.d("APIService", "ConfigInterceptor, url:" + request.url() +
-                    ", networkResponse:" + (response.networkResponse() != null) +
-                    ", cacheResponse:" + (response.cacheResponse() != null) +
-                    ", code:" + (response.networkResponse() != null ? response.networkResponse().code() : -1) +
-                    ", duration:" + (endTime - startTime)
-            );
-
-            return response;
-
-//            try {
-//                return chain.proceed(request);
-//            } catch (Exception e) {
-//                if (!(e instanceof SocketException || e instanceof SocketTimeoutException)) {
-//                    Log.e("ConfigInterceptor", "error", e);
-//                }
-//                return new Response.Builder()
-//                        .protocol(Protocol.HTTP_1_1)
-//                        .code(404)
-//                        .message("Exeception when execute chain.proceed request")
-//                        .body(new ResponseBody() {
-//                            @Nullable
-//                            @Override
-//                            public MediaType contentType() {
-//                                return null;
-//                            }
-//
-//                            @Override
-//                            public long contentLength() {
-//                                return 0;
-//                            }
-//
-//                            @Override
-//                            public BufferedSource source() {
-//                                return null;
-//                            }
-//                        })
-//                        .request(request).build();
-//            }
-        }
     }
 
 }

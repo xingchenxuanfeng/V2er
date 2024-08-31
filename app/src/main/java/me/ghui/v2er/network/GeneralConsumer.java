@@ -121,7 +121,8 @@ public abstract class GeneralConsumer<T extends IBase> implements Observer<T> {
         if (BuildConfig.DEBUG && preExceptionOnSubscribe != null) {
             preExceptionOnSubscribe.addSuppressed(e);
             Log.e("GeneralConsumer", "onError", preExceptionOnSubscribe);
-            throw preExceptionOnSubscribe;
+//            throw preExceptionOnSubscribe;
+            Voast.show(e.getMessage());
         }
         GeneralError generalError;
         if (e instanceof GeneralError) {

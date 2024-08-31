@@ -30,6 +30,9 @@ public class AcceptOriginCookieAndModifyLocationInterceptor implements Intercept
                 return response;
             }
             HttpUrl httpUrl = HttpUrl.parse(locationUrl);
+            if (httpUrl == null) {
+                return response;
+            }
             String host = httpUrl.host();
             if ("www.v2ex.com".equals(host)) {
                 if (!imprBaseUrl.equals(Constants.BASE_URL)) {

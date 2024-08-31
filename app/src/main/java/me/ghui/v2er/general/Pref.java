@@ -70,4 +70,12 @@ public class Pref {
         Prefs.with(app()).writeBoolean(key, value);
     }
 
+    public static long readLong(String key) {
+        return Prefs.with(app()).readLong(key);
+    }
+
+    public static void save(String key, long value) {
+        Prefs.with(app()).writeLong(key, value);
+    }
+
 }
