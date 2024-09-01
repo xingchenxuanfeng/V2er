@@ -137,7 +137,7 @@ public abstract class GeneralConsumer<T extends IBase> implements Observer<T> {
                 if (!Utils.isNetworkAvailable()) msg = "Network Connection Error";
                 generalError = new GeneralError(ResultCode.NETWORK_ERROR, msg);
                 if (BuildConfig.DEBUG) {
-                    throw new RuntimeException(e);
+//                    throw new RuntimeException(e);
                 }
             }
         }

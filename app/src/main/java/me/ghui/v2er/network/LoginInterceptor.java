@@ -4,6 +4,8 @@ import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 import static me.ghui.v2er.network.APIService.UA_KEY;
 import static me.ghui.v2er.network.APIService.WAP_USER_AGENT;
 
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
 import java.io.IOException;
@@ -28,9 +30,16 @@ public class LoginInterceptor implements Interceptor {
         HttpUrl originUrl = request.url();
         HttpUrl newUrl = response.request().url();
         if (!originUrl.equals(newUrl)) {
-            if (newUrl.encodedPath().contains("signin")) {
-                Voast.show("需要登录");
-                LoginActivity.goLogin();
+            if (!LoginActivity.isLoginActivityResume()) {
+                if (newUrl.encodedPath().contains("signin")) {
+                    new Handler(Looper.getMainLooper()).post(new Runnable() {
+                        @Override
+                        public void run() {
+                            Voast.show("需要登录");
+                        }
+                    });
+                    LoginActivity.goLogin();
+                }
             }
         }
         return response;

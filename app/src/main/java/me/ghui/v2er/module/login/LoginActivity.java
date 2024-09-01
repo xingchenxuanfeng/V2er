@@ -75,6 +75,10 @@ public class LoginActivity extends BaseActivity<LoginContract.IPresenter> implem
     private boolean mHasLoaded;
     private LoginParam mLoginParam;
 
+    public static boolean isLoginActivityResume() {
+        return sIsLoginActivityResume;
+    }
+
     public static boolean sIsLoginActivityResume = false;
 
     public static void goLogin() {
