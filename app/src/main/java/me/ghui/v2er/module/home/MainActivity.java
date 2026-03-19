@@ -21,8 +21,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager.widget.ViewPager;
 
 import com.bumptech.glide.request.target.Target;
-import com.flyco.tablayout.listener.OnTabSelectListener;
-import com.flyco.tablayout.widget.MsgView;
+import me.ghui.v2er.widget.listener.OnTabSelectListener;
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.navigation.NavigationView;
 
@@ -379,7 +378,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
             //config sliding msgview
             float padding = getResources().getDimension(R.dimen.mediumTextSize) / 2f;
             mSlidingTabLayout.setMsgMargin(1, padding * 0.92f, padding * 0.28f);
-            MsgView msgView = mSlidingTabLayout.getMsgView(1);
+            TextView msgView = mSlidingTabLayout.getMsgView(1);
             float textSize = getResources().getDimension(R.dimen.tinyTextSize);
             msgView.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize);
             RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams) msgView.getLayoutParams();

@@ -26,9 +26,8 @@ import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.flyco.tablayout.listener.OnTabSelectListener;
-import com.flyco.tablayout.utils.UnreadMsgUtils;
-import com.flyco.tablayout.widget.MsgView;
+import android.widget.TextView;
+import me.ghui.v2er.widget.listener.OnTabSelectListener;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -809,9 +808,14 @@ public class CSlidingTabLayout extends HorizontalScrollView implements ViewPager
         }
 
         View tabView = mTabsContainer.getChildAt(position);
-        MsgView tipView = (MsgView) tabView.findViewById(R.id.rtv_msg_tip);
-        if (tipView != null) {
-            UnreadMsgUtils.show(tipView, num);
+            TextView tipView = (TextView) tabView.findViewById(R.id.rtv_msg_tip);
+            if (tipView != null) {
+                tipView.setVisibility(View.VISIBLE);
+                if (num > 0) {
+                    tipView.setText(String.valueOf(num));
+                } else {
+                    tipView.setText("");
+                }
 
             if (mInitSetMap.get(position) != null && mInitSetMap.get(position)) {
                 return;
@@ -843,7 +847,7 @@ public class CSlidingTabLayout extends HorizontalScrollView implements ViewPager
         }
 
         View tabView = mTabsContainer.getChildAt(position);
-        MsgView tipView = (MsgView) tabView.findViewById(R.id.rtv_msg_tip);
+        TextView tipView = (TextView) tabView.findViewById(R.id.rtv_msg_tip);
         if (tipView != null) {
             tipView.setVisibility(View.GONE);
         }
@@ -857,7 +861,7 @@ public class CSlidingTabLayout extends HorizontalScrollView implements ViewPager
             position = mTabCount - 1;
         }
         View tabView = mTabsContainer.getChildAt(position);
-        MsgView tipView = (MsgView) tabView.findViewById(R.id.rtv_msg_tip);
+        TextView tipView = (TextView) tabView.findViewById(R.id.rtv_msg_tip);
         if (tipView != null) {
             TextView tv_tab_title = (TextView) tabView.findViewById(R.id.tv_tab_title);
             mTextPaint.setTextSize(mTextsize);
@@ -873,12 +877,12 @@ public class CSlidingTabLayout extends HorizontalScrollView implements ViewPager
     /**
      * 当前类只提供了少许设置未读消息属性的方法,可以通过该方法获取MsgView对象从而各种设置
      */
-    public MsgView getMsgView(int position) {
+    public TextView getMsgView(int position) {
         if (position >= mTabCount) {
             position = mTabCount - 1;
         }
         View tabView = mTabsContainer.getChildAt(position);
-        MsgView tipView = (MsgView) tabView.findViewById(R.id.rtv_msg_tip);
+        TextView tipView = (TextView) tabView.findViewById(R.id.rtv_msg_tip);
         return tipView;
     }
 

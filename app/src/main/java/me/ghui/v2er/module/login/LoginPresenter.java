@@ -61,7 +61,7 @@ public class LoginPresenter implements LoginContract.IPresenter {
                 .compose(mView.rx())
                 .map(response -> response.body().string())
                 .map(s -> {
-                    Log.e("testtest", s);
+                    Log.e("loginApiResponse", s);
                     DailyInfo resultInfo = APIService.fruit().fromHtml(s, DailyInfo.class);
                     if (!resultInfo.isValid()) {//check whether is login success
                         LoginParam loginParam = APIService.fruit().fromHtml(s, LoginParam.class);

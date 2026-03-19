@@ -4,11 +4,11 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import androidx.annotation.ColorInt;
 import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.RecyclerView;
 import android.util.AttributeSet;
 
-import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
-import com.yqritc.recyclerviewflexibledivider.VerticalDividerItemDecoration;
+import androidx.core.content.ContextCompat;
 
 import me.ghui.v2er.util.Theme;
 import me.ghui.v2er.R;
@@ -58,19 +58,15 @@ public class BaseRecyclerView extends RecyclerView {
     }
 
     public void addDivider(@ColorInt int dividerColor, float dividerSizeDp) {
-        addItemDecoration(
-                new HorizontalDividerItemDecoration.Builder(getContext())
-                        .color(dividerColor)
-                        .size(Math.round(ScaleUtils.dp(dividerSizeDp)))
-                        .build());
+        DividerItemDecoration decoration = new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL);
+        decoration.setDrawable(ContextCompat.getDrawable(getContext(), R.drawable.recyclerview_divider));
+        addItemDecoration(decoration);
     }
 
     public void addVerticalDivider(@ColorInt int dividerColor, float dividerSizeDp) {
-        addItemDecoration(
-                new VerticalDividerItemDecoration.Builder(getContext())
-                        .color(dividerColor)
-                        .size(Math.round(ScaleUtils.dp(dividerSizeDp)))
-                        .build());
+        DividerItemDecoration decoration = new DividerItemDecoration(getContext(), DividerItemDecoration.HORIZONTAL);
+        decoration.setDrawable(ContextCompat.getDrawable(getContext(), R.drawable.recyclerview_divider));
+        addItemDecoration(decoration);
     }
 
 

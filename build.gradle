@@ -12,20 +12,22 @@ buildscript {
     }
 }
 
-allprojects {
-    repositories {
-        google()
-        mavenCentral()
-        jcenter()
-        maven {
-            url 'https://maven.aliyun.com/repository/releases'
-        }
-        maven { url "https://jitpack.io" }
+    allprojects {
+        repositories {
+            google()
+            mavenCentral()
+            jcenter()
+            maven {
+                url 'https://maven.aliyun.com/repository/releases'
+            }
+            maven {
+                url 'https://maven.aliyun.com/repository/public'
+            }
+            maven { url "https://jitpack.io" }
 //        maven { url "https://dl.bintray.com/ghui/Java" }
+        }
     }
-}
 
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
-
