@@ -49,16 +49,16 @@ public class HttpDNS implements Dns {
         HTTPDNSResult httpdnsResult = httpDnsService.getHttpDnsResultForHostAsync(hostname, RequestIpType.auto);
         List<InetAddress> inetAddresses = new ArrayList<>();
         try {
-            if (httpdnsResult.ips != null) {
+            if (httpdnsResult.getIps() != null) {
                 //处理IPv4地址
-                for (String ipv4 : httpdnsResult.ips) {
+                for (String ipv4 : httpdnsResult.getIps()) {
                     InetAddress address = InetAddress.getByName(ipv4);
                     inetAddresses.add(address);
                 }
             }
-            if (httpdnsResult.ipv6s != null) {
+            if (httpdnsResult.getIpv6s() != null) {
                 //处理IPv6地址
-                for (String ipv6 : httpdnsResult.ipv6s) {
+                for (String ipv6 : httpdnsResult.getIpv6s()) {
                     InetAddress address = InetAddress.getByName(ipv6);
                     inetAddresses.add(address);
                 }

@@ -3,11 +3,11 @@ def localProperties = new Properties()
 localProperties.load(new FileInputStream(rootProject.file("local.properties")))
 
 android {
-    compileSdk 34
+    compileSdk 35
     defaultConfig {
         applicationId "xc.v2er.impr"
         minSdkVersion 27
-        targetSdkVersion 34
+        targetSdkVersion 35
         versionCode rootProject.ext.app.versionCode
         versionName rootProject.ext.app.versionName
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
@@ -128,5 +128,5 @@ dependencies {
     implementation 'org.slf4j:slf4j-nop:1.7.25'
     implementation 'androidx.core:core-splashscreen:1.0.1'
 
-    implementation 'com.aliyun.ams:alicloud-android-httpdns:2.3.2'
+    implementation 'com.aliyun.ams:alicloud-android-httpdns:2.6.7'
 }
